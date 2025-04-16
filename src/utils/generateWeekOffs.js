@@ -1,9 +1,9 @@
 // utils/generateWeekOffs.js
+
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-function getUniqueDay(usedDays) {
-  const available = DAYS.filter(day => !usedDays.includes(day));
-  return available[Math.floor(Math.random() * available.length)];
+function getRandomDay() {
+  return DAYS[Math.floor(Math.random() * DAYS.length)];
 }
 
 function expandLanguages(language) {
@@ -14,7 +14,7 @@ export function generateWeekOffs(data) {
   const campaignMap = {};
   const languageMap = {};
 
-  // Group data by campaign
+  // Group by campaign
   for (let person of data) {
     const campaign = person.Campaign.trim();
     if (!campaignMap[campaign]) campaignMap[campaign] = [];
@@ -33,32 +33,36 @@ export function generateWeekOffs(data) {
       let assignedDay;
       let attempts = 0;
 
+      // Try 100 times to find a conflict-free day
       while (!assignedDay && attempts < 100) {
-        const tryDay = DAYS[Math.floor(Math.random() * DAYS.length)];
-        const dayConflict =
-          isStrict && Object.values(usedDaysInCampaign).includes(tryDay);
+        const tryDay = getRandomDay();
 
-        const languageConflict = languages.some(lang => {
-          return usedDaysByLanguage[lang]?.includes(tryDay);
-        });
+        const campaignConflict = isStrict && Object.values(usedDaysInCampaign).includes(tryDay);
+        const languageConflict = languages.some(lang => usedDaysByLanguage[lang]?.includes(tryDay));
 
-        if (!dayConflict && !languageConflict) {
+        if (!campaignConflict && !languageConflict) {
           assignedDay = tryDay;
+          break;
         }
 
         attempts++;
       }
 
-      // Assign day
-      person.WeekOff = assignedDay || 'None';
+      // Fallback: assign a random day even if conflict remains
+      if (!assignedDay) {
+        assignedDay = getRandomDay();
+      }
+
+      // Save week off
+      person.WeekOff = assignedDay;
 
       if (isStrict) {
-        usedDaysInCampaign[person.Name] = person.WeekOff;
+        usedDaysInCampaign[person.Name] = assignedDay;
       }
 
       for (const lang of languages) {
         if (!usedDaysByLanguage[lang]) usedDaysByLanguage[lang] = [];
-        usedDaysByLanguage[lang].push(person.WeekOff);
+        usedDaysByLanguage[lang].push(assignedDay);
       }
 
       result.push(person);

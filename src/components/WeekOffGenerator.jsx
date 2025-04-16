@@ -29,8 +29,7 @@ const WeekOffGenerator = () => {
     if (!fileData || !weekRange.from || !weekRange.to) return alert("Please upload file and select date range");
 
     const labeledData = fileData.map(row => ({
-      ...row,
-      WeekOffRange: `${weekRange.from} to ${weekRange.to}`
+      ...row
     }));
 
     const updatedData = generateWeekOffs(labeledData);
