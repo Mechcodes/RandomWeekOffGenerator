@@ -1,11 +1,10 @@
-
 import React from 'react';
-import WeekOffGenerator from './components/WeekOffGenerator';
+import Test from './components/Test';
 
 const App = () => {
   return (
     <div className="min-h-screen bg-gray-100">
-      <WeekOffGenerator />
+      <Test />
     </div>
   );
 };
